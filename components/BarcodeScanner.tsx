@@ -105,9 +105,9 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
             className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-inner shadow-zinc-200 transition focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:bg-zinc-100 disabled:text-zinc-400"
             disabled={isScanning}
           >
-            {cameras.map((camera) => (
+            {cameras.map((camera, index) => (
               <option
-                key={camera.deviceId}
+                key={index}
                 value={camera.deviceId}
                 className="bg-white text-zinc-900"
               >
