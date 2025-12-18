@@ -246,6 +246,7 @@ export default function OpenFoodFactsSearch() {
   const client = useMemo(createClient, []);
   const [barcode, setBarcode] = useState("");
   const [product, setProduct] = useState<ProductWithExtensions | null>(null);
+  const [coopOnly, setCoopOnly] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
@@ -367,10 +368,13 @@ export default function OpenFoodFactsSearch() {
     const baseQuery: Record<string, string | number> = {
       categories_tags: categoryTag,
       countries_tags: SWISS_COUNTRY_TAGS.join("|"),
-      stores_tags: COOP_STORE_TAGS.join("|"),
       page_size: 5,
       fields,
     };
+
+    if (coopOnly) {
+      baseQuery.stores_tags = COOP_STORE_TAGS.join("|");
+    }
 
     setHealthyLoading(true);
     setSustainableLoading(true);
@@ -415,7 +419,7 @@ export default function OpenFoodFactsSearch() {
               (item) =>
                 item.code !== product.code &&
                 isDistributedInSwitzerland(item) &&
-                isAvailableAtCoop(item) &&
+                (!coopOnly || isAvailableAtCoop(item)) &&
                 isValidScore(item.nutrition_grade_fr)
             )
           );
@@ -437,7 +441,7 @@ export default function OpenFoodFactsSearch() {
               (item) =>
                 item.code !== product.code &&
                 isDistributedInSwitzerland(item) &&
-                isAvailableAtCoop(item) &&
+                (!coopOnly || isAvailableAtCoop(item)) &&
                 isValidScore(item.ecoscore_grade)
             )
           );
@@ -465,7 +469,7 @@ export default function OpenFoodFactsSearch() {
     return () => {
       isActive = false;
     };
-  }, [client, product]);
+  }, [client, product, coopOnly]);
 
   return (
     <section className="space-y-8">
@@ -602,6 +606,34 @@ export default function OpenFoodFactsSearch() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-400">
+                Filter
+              </span>
+              <button
+                type="button"
+                onClick={() => setCoopOnly((current) => !current)}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm transition ${
+                  coopOnly
+                    ? "bg-orange-100 text-orange-700 shadow-orange-200"
+                    : "bg-zinc-200 text-zinc-600 shadow-zinc-200"
+                }`}
+              >
+                {coopOnly ? "Nur Coop-Produkte" : "Alle Produkte"}
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    coopOnly ? "bg-orange-500" : "bg-zinc-500"
+                  }`}
+                  aria-hidden="true"
+                />
+                <span className="sr-only">
+                  {coopOnly
+                    ? "Filter ist aktiv. Klicken, um alle Produkte anzuzeigen."
+                    : "Filter ist inaktiv. Klicken, um nur Coop-Produkte zu zeigen."}
+                </span>
+              </button>
             </div>
 
             <AlternativeSection
